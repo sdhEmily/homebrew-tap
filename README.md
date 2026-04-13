@@ -1,15 +1,15 @@
-# SdhEmily Tap
+# sdhEmily's stuff
 
 ## How do I install these formulae?
 
-`brew install sdhemily/tap/<formula>`
+`brew install sdhEmily/tap/<formula>`
 
-Or `brew tap sdhemily/tap` and then `brew install <formula>`.
+Or `brew tap sdhEmily/tap` and then `brew install <formula>`.
 
 Or, in a `brew bundle` `Brewfile`:
 
 ```ruby
-tap "sdhemily/tap"
+tap "sdhEmily/tap"
 brew "<formula>"
 ```
 
