@@ -32,12 +32,12 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           brew livecheck --tap sdhEmily/tap --newer-only --json | jq -r '.[] | "\(.formula // .cask) \(.version.latest)"' | while read -r pkg version; do
-            if brew bump-cask-pr --write-only --no-browse --version="$version" sdhEmily/tap/$pkg 2>/dev/null || \
-               brew bump-formula-pr --write-only --no-browse --version="$version" sdhEmily/tap/$pkg 2>/dev/null; then
-              cd $(brew --repository sdhEmily/tap)
+            if brew bump-cask-pr --write-only --no-browse --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null || \
+              brew bump-formula-pr --write-only --no-browse --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null; then
+              cd "$(brew --repository sdhEmily/tap)"
               git push
             else
-              brew bump-cask-pr --no-fork --version="$version" sdhEmily/tap/$pkg 2>/dev/null || \
-              brew bump-formula-pr --no-fork --version="$version" sdhEmily/tap/$pkg
+              brew bump-cask-pr --no-fork --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null || \
+              brew bump-formula-pr --no-fork --version="$version" "sdhEmily/tap/$pkg"
             fi
           done
