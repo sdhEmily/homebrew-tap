@@ -19,6 +19,7 @@ cask "devkitpro" do
               "org.devkitpro.launchagent",
               "org.devkitpro.pacman-scripts",
               "org.devkitpro.pacman.arm64",
+              "org.devkitpro.pacman.x86_64",
             ],
             delete:    [
               "/opt/devkitpro",
