@@ -3,41 +3,75 @@ name: Bump on schedule or request
 on:
   workflow_dispatch:
   schedule:
-    # Every 3 hours 23 minutes past the hour
     - cron: "23 */3 * * *"
 
 permissions:
   contents: write
 
 jobs:
-  autobump:
-    env:
-      HOMEBREW_DEVELOPER: 1
+  bump:
     runs-on: macos-26
+    env:
+      TAP: sdhEmily/tap
+      HOMEBREW_DEVELOPER: 1
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@main
+      - uses: Homebrew/actions/setup-homebrew@main
         with:
           core: true
           cask: true
 
-      - name: Configure Git user
-        uses: Homebrew/actions/git-user-config@main
-        with:
-          username: ${{ github.actor }}
-
       - name: Bump
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          brew livecheck --tap sdhEmily/tap --newer-only --json | jq -r '.[] | "\(.formula // .cask) \(.version.latest)"' | while read -r pkg version; do
-            if brew bump-cask-pr --write-only --no-browse --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null || \
-              brew bump-formula-pr --write-only --no-browse --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null; then
-              cd "$(brew --repository sdhEmily/tap)"
-              git push
-            else
-              brew bump-cask-pr --no-fork --version="$version" "sdhEmily/tap/$pkg" 2>/dev/null || \
-              brew bump-formula-pr --no-fork --version="$version" "sdhEmily/tap/$pkg"
-            fi
-          done
+          set -euo pipefail
+          brew tap "$TAP" || true
+
+          # Find outdated casks and formulae in this tap
+          CASKS=$(brew livecheck --tap "$TAP" --cask --newer-only --json | jq -r '.[] | "\(.cask) \(.version.latest)"')
+          FORMULAE=$(brew livecheck --tap "$TAP" --newer-only --json       | jq -r '.[] | select(.formula!=null) | "\(.formula) \(.version.latest)"')
+
+          # If nothing to do, exit early
+          if [[ -z "${CASKS}${FORMULAE}" ]]; then
+            echo "Nothing to bump."
+            exit 0
+          fi
+
+          REPO_PATH="$(brew --repository "$TAP")"
+          # Git identity + non-interactive push auth
+          git -C "$REPO_PATH" config user.name  "$GITHUB_ACTOR"
+          git -C "$REPO_PATH" config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global --unset credential.helper 2>/dev/null || true
+          git -C "$REPO_PATH" remote set-url origin "https://x-access-token:${HOMEBREW_GITHUB_API_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Bump casks
+          if [[ -n "$CASKS" ]]; then
+            while read -r cask version; do
+              echo "Bump cask $cask -> $version"
+              brew bump-cask-pr --write-only --no-browse --version="$version" "$TAP/$cask" || continue
+              if ! git -C "$REPO_PATH" diff --quiet; then
+                git -C "$REPO_PATH" add -A
+                git -C "$REPO_PATH" commit -m "$cask $version"
+              fi
+            done <<<"$CASKS"
+          fi
+
+          # Bump formulae
+          if [[ -n "$FORMULAE" ]]; then
+            while read -r formula version; do
+              echo "Bump formula $formula -> $version"
+              brew bump-formula-pr --write-only --no-browse --version="$version" "$TAP/$formula" || continue
+              if ! git -C "$REPO_PATH" diff --quiet; then
+                git -C "$REPO_PATH" add -A
+                git -C "$REPO_PATH" commit -m "$formula $version"
+              fi
+            done <<<"$FORMULAE"
+          fi
+
+          # Push only if main changed
+          git -C "$REPO_PATH" fetch origin main --quiet || true
+          if git -C "$REPO_PATH" diff --quiet origin/main..HEAD; then
+            echo "No changes to push."
+          else
+            git -C "$REPO_PATH" push origin HEAD:refs/heads/main
+          fi
