@@ -27,51 +27,37 @@ jobs:
           set -euo pipefail
           brew tap "$TAP" || true
 
-          # Find outdated casks and formulae in this tap
-          CASKS=$(brew livecheck --tap "$TAP" --cask --newer-only --json | jq -r '.[] | "\(.cask) \(.version.latest)"')
-          FORMULAE=$(brew livecheck --tap "$TAP" --newer-only --json       | jq -r '.[] | select(.formula!=null) | "\(.formula) \(.version.latest)"')
-
-          # If nothing to do, exit early
-          if [[ -z "${CASKS}${FORMULAE}" ]]; then
-            echo "Nothing to bump."
-            exit 0
-          fi
-
           REPO_PATH="$(brew --repository "$TAP")"
-          # Git identity + non-interactive push auth
           git -C "$REPO_PATH" config user.name  "$GITHUB_ACTOR"
           git -C "$REPO_PATH" config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git config --global --unset credential.helper 2>/dev/null || true
           git -C "$REPO_PATH" remote set-url origin "https://x-access-token:${HOMEBREW_GITHUB_API_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-          # Bump casks
+          CASKS=$(brew livecheck --tap "$TAP" --cask --newer-only --json | jq -r '.[] | "\(.cask) \(.version.latest)"')
+          FORMULAE=$(brew livecheck --tap "$TAP" --newer-only --json | jq -r '.[] | select(.formula) | "\(.formula) \(.version.latest)"')
+
+          [[ -z "${CASKS}${FORMULAE}" ]] && { echo "Nothing to bump."; exit 0; }
+
           if [[ -n "$CASKS" ]]; then
-            while read -r cask version; do
-              echo "Bump cask $cask -> $version"
-              brew bump-cask-pr --write-only --no-browse --version="$version" "$TAP/$cask" || continue
+            while read -r name ver; do
+              echo "Cask: $name -> $ver"
+              brew bump-cask-pr --write-only --no-browse --version="$ver" "$TAP/$name" || true
               if ! git -C "$REPO_PATH" diff --quiet; then
                 git -C "$REPO_PATH" add -A
-                git -C "$REPO_PATH" commit -m "$cask $version"
+                git -C "$REPO_PATH" commit -m "$name $ver"
               fi
             done <<<"$CASKS"
           fi
 
-          # Bump formulae
           if [[ -n "$FORMULAE" ]]; then
-            while read -r formula version; do
-              echo "Bump formula $formula -> $version"
-              brew bump-formula-pr --write-only --no-browse --version="$version" "$TAP/$formula" || continue
+            while read -r name ver; do
+              echo "Formula: $name -> $ver"
+              brew bump-formula-pr --write-only --no-browse --version="$ver" "$TAP/$name" || true
               if ! git -C "$REPO_PATH" diff --quiet; then
                 git -C "$REPO_PATH" add -A
-                git -C "$REPO_PATH" commit -m "$formula $version"
+                git -C "$REPO_PATH" commit -m "$name $ver"
               fi
             done <<<"$FORMULAE"
           fi
 
-          # Push only if main changed
-          git -C "$REPO_PATH" fetch origin main --quiet || true
-          if git -C "$REPO_PATH" diff --quiet origin/main..HEAD; then
-            echo "No changes to push."
-          else
-            git -C "$REPO_PATH" push origin HEAD:refs/heads/main
-          fi
+          git -C "$REPO_PATH"
