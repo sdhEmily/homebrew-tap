@@ -1,6 +1,6 @@
 cask "equilotl" do
-  version "2.1.4"
-  sha256 "70cc2f072fb45782023cea77a7d352a13f79ab30252ea188765b3b0301639601"
+  version "2.1.5"
+  sha256 "6b1dbad0c79e34e3f3f9ce18750da1a2f44460a14f5996535080ae76ba73e6a2"
 
   url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl.MacOS.zip"
   name "Equilotl"
