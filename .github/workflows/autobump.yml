@@ -13,7 +13,6 @@ jobs:
     runs-on: macos-26
     env:
       TAP: sdhEmily/tap
-      HOMEBREW_DEVELOPER: 1
       HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: Homebrew/actions/setup-homebrew@main
@@ -24,53 +23,55 @@ jobs:
       - name: Bump
         run: |
           set -euo pipefail
-          brew tap "$TAP" || true
+          brew tap "$TAP"
 
-          livecheck_with_retry() {
+          run_livecheck() {
+            local result
             for i in 1 2 3; do
-              if result=$(brew livecheck "$@" 2>/dev/null); then
-                echo "$result"
-                return 0
-              fi
+              result=$(brew livecheck "$@" 2>/dev/null) && { echo "$result"; return; }
               echo "Livecheck attempt $i failed, retrying in 15s..." >&2
               sleep 15
             done
             echo "[]"
           }
 
-          CASKS=$(livecheck_with_retry --tap "$TAP" --cask --newer-only --json \
+          CASKS=$(run_livecheck --tap "$TAP" --cask --newer-only --json \
             | jq -r '.[] | "\(.cask) \(.version.latest)"')
-          FORMULAE=$(livecheck_with_retry --tap "$TAP" --newer-only --json \
+          FORMULAE=$(run_livecheck --tap "$TAP" --newer-only --json \
             | jq -r '.[] | select(.formula!=null) | "\(.formula) \(.version.latest)"')
 
-          [[ -z "${CASKS}${FORMULAE}" ]] && { echo "Nothing to bump."; exit 0; }
+          if [[ -z "${CASKS}${FORMULAE}" ]]; then
+            echo "Nothing to bump."
+            exit 0
+          fi
 
           REPO_PATH="$(brew --repository "$TAP")"
-          git -C "$REPO_PATH" config user.name "$GITHUB_ACTOR"
-          git -C "$REPO_PATH" config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git config --global --unset credential.helper 2>/dev/null || true
-          git -C "$REPO_PATH" remote set-url origin \
+          cd "$REPO_PATH"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin \
             "https://x-access-token:${HOMEBREW_GITHUB_API_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-          bump_and_commit() {
+          bump() {
             local type="$1" name="$2" version="$3"
-            echo "Bump $type $name -> $version"
+            echo "Bumping $type $name -> $version"
             brew "bump-${type}-pr" --write-only --no-browse --version="$version" "$TAP/$name" || return
-            if ! git -C "$REPO_PATH" diff --quiet; then
-              git -C "$REPO_PATH" add -A
-              git -C "$REPO_PATH" commit -m "$name $version"
+            if ! git diff --quiet; then
+              git add -A
+              git commit -m "$name $version"
             fi
           }
 
-          [[ -n "$CASKS" ]] && while read -r name ver; do
-            bump_and_commit cask "$name" "$ver"
+          while read -r name ver; do
+            [[ -n "$name" ]] && bump cask "$name" "$ver"
           done <<<"$CASKS"
 
-          [[ -n "$FORMULAE" ]] && while read -r name ver; do
-            bump_and_commit formula "$name" "$ver"
+          while read -r name ver; do
+            [[ -n "$name" ]] && bump formula "$name" "$ver"
           done <<<"$FORMULAE"
 
-          git -C "$REPO_PATH" fetch origin main --quiet || true
-          if ! git -C "$REPO_PATH" diff --quiet origin/main..HEAD; then
-            git -C "$REPO_PATH" push origin HEAD:refs/heads/main
+          git fetch origin main --quiet
+          if ! git diff --quiet origin/main..HEAD; then
+            git push origin HEAD:main
           fi
