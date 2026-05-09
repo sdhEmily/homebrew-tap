@@ -1,9 +1,9 @@
 cask "equilotl" do
   arch arm: "arm64", intel: "x64"
 
-  version "2.1.9"
-  sha256 arm:   "a4b682c5bb8cb89d0f8e305a9a9abacd552379e164f77fdb19748016f823a60e",
-         intel: "6fe3c0d01d22354da7245e00944f005652e348f6722a8aef63b3f84f027c4431"
+  version "2.2.1"
+  sha256 arm:   "0a835de73f192e32c1fb6bb35345360bb87724980a5f92ba84dc2ada720b4d3d",
+         intel: "2d59a45aab018f21e2b41ba7406311c174cde22ce0ccb76691a210c07bb7f1ee"
 
   url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl-darwin-#{arch}.zip"
   name "Equilotl"
