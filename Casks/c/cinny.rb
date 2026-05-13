@@ -13,8 +13,6 @@ cask "cinny" do
     strategy :github_latest
   end
 
-  depends_on :macos
-
   app "Cinny.app"
 
   zap trash: [
