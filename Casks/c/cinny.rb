@@ -1,6 +1,6 @@
 cask "cinny" do
-  version "4.11.2"
-  sha256 "5eace21f6a1ae027b37fcd1cf477d3fe23ef92c44ea0eeadeadbfbe50f30679e"
+  version "4.12.1"
+  sha256 "4641bd7dc21c66c738c941738f218dbb5eaa8508629f12fd1d5f78fea414f787"
 
   url "https://github.com/cinnyapp/cinny-desktop/releases/download/v#{version}/Cinny_desktop-universal.dmg",
       verified: "github.com/cinnyapp/cinny-desktop/releases/download/"
@@ -12,6 +12,8 @@ cask "cinny" do
     url :url
     strategy :github_latest
   end
+
+  depends_on :macos
 
   app "Cinny.app"
 
