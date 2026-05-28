@@ -1,9 +1,9 @@
 cask "equilotl" do
   arch arm: "arm64", intel: "x64"
 
-  version "2.2.2"
-  sha256 arm:   "334532e01c2c75337fa12cfcf0d3450c93b1347f2292e94804b7abe2a4993b88",
-         intel: "c86224881c0fe1e4985d92dfb88c1b5b6da2d879ae7685d6938e82837cd74da0"
+  version "2.2.3"
+  sha256 arm:   "62bfa4a1951cb8d6870817d3aed5036e24edfbb3404040098644c76b4b19aa76",
+         intel: "61678eb51057565711e2f843a1642f155c94f54b8600c00c1be2f7abdd2b161f"
 
   url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl-darwin-#{arch}.zip"
   name "Equilotl"
@@ -15,7 +15,7 @@ cask "equilotl" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :big_sur"
+  depends_on macos: :big_sur
 
   app "Equilotl.app"
 
