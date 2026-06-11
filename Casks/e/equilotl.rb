@@ -7,7 +7,7 @@ cask "equilotl" do
 
   url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl-darwin-#{arch}.zip"
   name "Equilotl"
-  desc "Cross platform gui app for installing Equicord"
+  desc "Cross platform GUI app for installing Equicord"
   homepage "https://github.com/Equicord/Equilotl"
 
   livecheck do
