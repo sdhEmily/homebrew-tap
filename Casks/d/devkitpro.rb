@@ -12,6 +12,8 @@ cask "devkitpro" do
     strategy :github_latest
   end
 
+  depends_on :macos
+
   pkg "devkitpro-pacman-installer.pkg"
 
   uninstall launchctl: "devkit.env",
