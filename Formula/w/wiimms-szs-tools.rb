@@ -1,7 +1,7 @@
 class WiimmsSzsTools < Formula
   desc "Tool to manipulate various Mario Kart Wii files"
   homepage "https://szs.wiimm.de"
-  url "https://szs.wiimm.de/download/szs-v#{version}-mac64.tar.gz"
+  url "https://szs.wiimm.de/download/szs-v2.42a-r8989-mac64.tar.gz"
   version "2.42a-r8989"
   sha256 "57a24af66b9152f775f6b075cbfa477d3f645e65e071c5bff1d9712c352fb50f"
 
