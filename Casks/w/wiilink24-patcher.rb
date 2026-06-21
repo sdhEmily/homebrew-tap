@@ -1,9 +1,9 @@
 cask "wiilink24-patcher" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.5.1"
-  sha256 arm:   "66989f9aa6d895c7ef95201dbee6ddc6f8375fee85bc892d6b7172201faa50f1",
-         intel: "5526bc92ddc6891c601bc52d26dddde01eed99d9c68bc25dd31ba881cda8fb47"
+  version "1.5.3"
+  sha256 arm:   "d560a2e0bdef37764da6b957e8d811a73ee6b7bbf2fb237d5d3177ae9546558d",
+         intel: "751f431f2b62b77e3ac9eb75220fb079007de7c57c082b76fa09344337fdedca"
 
   url "https://github.com/WiiLink24/WiiLink-Patcher-GUI/releases/download/v#{version}/WiiLinkPatcherGUI-macOS-#{arch}.tar.gz"
   name "WiiLink Patcher GUI"
