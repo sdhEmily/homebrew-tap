@@ -38,9 +38,12 @@ cask "discord+equicord" do
                    args: ["-gj", "-a", "/Applications/Discord.app"]
     system_command "/usr/bin/osascript",
                    args: ["-e", 'quit app "Discord"']
-    ohai "Installing Equicord & OpenAsar"
+    ohai "Installing OpenAsar"
     system_command formula_opt_bin("equilotl-cli")/"equilotl",
-                   args: ["-install", "-install-openasar", "-location", "/Applications/Discord.app"]
+                   args: ["-install-openasar", "-location", "/Applications/Discord.app"]
+    ohai "Installing Equicord"
+    system_command formula_opt_bin("equilotl-cli")/"equilotl",
+                   args: ["-install", "-location", "/Applications/Discord.app"]
   end
 
   uninstall quit: [
