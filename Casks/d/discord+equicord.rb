@@ -44,6 +44,12 @@ cask "discord+equicord" do
     ohai "Installing Equicord"
     system_command formula_opt_bin("equilotl-cli")/"equilotl",
                    args: ["-install", "-location", "/Applications/Discord.app"]
+    settings_path = File.expand_path("~/Library/Application Support/discord/settings.json")
+    if File.exist?(settings_path)
+      ohai "Disabling new updater"
+      system_command "/usr/bin/sed",
+                     args: ["-i", "", "s/\"USE_NEW_UPDATER\": true/\"USE_NEW_UPDATER\": false/", settings_path]
+    end
   end
 
   uninstall quit: [
