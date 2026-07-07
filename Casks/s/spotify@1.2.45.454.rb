@@ -11,6 +11,10 @@ cask "spotify@1.2.45.454" do
   desc "Music streaming service"
   homepage "https://www.spotify.com/"
 
+  livecheck do
+    skip
+  end
+
   depends_on macos: :big_sur
 
   app "Spotify.app"
