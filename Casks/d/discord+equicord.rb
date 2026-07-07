@@ -29,6 +29,20 @@ cask "discord+equicord" do
 
   app "Discord.app"
 
+  preflight do
+    settings_path = File.expand_path("~/Library/Application Support/discord/settings.json")
+    system_command "/bin/chmod", args: ["644", settings_path] if File.exist?(settings_path)
+    if File.exist?("/Applications/Discord.app/Contents/Resources/app.asar")
+      system_command "/bin/chmod",
+                     args: ["644", File.expand_path("/Applications/Discord.app/Contents/Resources/app.asar")]
+    end
+    if File.exist?("/Applications/Discord.app/Contents/Resources/_app.asar")
+      system_command "/bin/chmod",
+                     args: ["644", File.expand_path("/Applications/Discord.app/Contents/Resources/_app.asar")]
+
+    end
+  end
+
   postflight do
     # evil hack to bypass gatekeeper
     ohai "Circumventing Quarantine"
@@ -44,12 +58,42 @@ cask "discord+equicord" do
     ohai "Installing Equicord"
     system_command formula_opt_bin("equilotl-cli")/"equilotl",
                    args: ["-install", "-location", "/Applications/Discord.app"]
-    settings_path = File.expand_path("~/Library/Application Support/discord/settings.json")
-    if File.exist?(settings_path)
-      ohai "Disabling new updater"
-      system_command "/usr/bin/sed",
-                     args: ["-i", "", "s/\"USE_NEW_UPDATER\": true/\"USE_NEW_UPDATER\": false/", settings_path]
-    end
+    ohai "Patching settings.json"
+    system_command "/usr/bin/python3",
+                   args: ["-c", <<~PYTHON]
+                     import json, os
+                     path = os.path.expanduser("~/Library/Application Support/discord/settings.json")
+                     if os.path.exists(path):
+                         with open(path) as f:
+                             settings = json.load(f)
+                     else:
+                         os.makedirs(os.path.dirname(path), exist_ok=True)
+                         settings = {
+                             "DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING": True,
+                             "BACKGROUND_COLOR": "#2c2d32",
+                             "offloadAdmControls": True,
+                             "DESKTOP_TTI_REMOVE_V8_CACHE_CLEAR": True,
+                             "DESKTOP_TTI_DNSTCP_WARMUP": True,
+                             "DESKTOP_TTI_UPDATE_BACKOFF_MAX_MS": 3000,
+                             "chromiumSwitches": {},
+                             "IS_MAXIMIZED": True,
+                             "IS_MINIMIZED": False,
+                         }
+
+                     settings["USE_NEW_UPDATER"] = False
+                     if "openasar" not in settings:
+                         settings["openasar"] = {"setup": True}
+
+                     with open(path, "w") as f:
+                         json.dump(settings, f, indent=2)
+                   PYTHON
+    system_command "/bin/chmod",
+                   args: ["444", File.expand_path("~/Library/Application Support/discord/settings.json")]
+    ohai "Locking asar"
+    system_command "/bin/chmod",
+                   args: ["444", File.expand_path("/Applications/Discord.app/Contents/Resources/app.asar")]
+    system_command "/bin/chmod",
+                   args: ["444", File.expand_path("/Applications/Discord.app/Contents/Resources/_app.asar")]
   end
 
   uninstall quit: [
