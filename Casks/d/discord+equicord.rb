@@ -61,7 +61,7 @@ cask "discord+equicord" do
                      with open(path, "w") as f:
                          json.dump(settings, f, indent=2)
                    PYTHON
-  end 
+  end
 
   uninstall quit: [
     "com.hnc.Discord",
