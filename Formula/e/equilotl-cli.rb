@@ -19,4 +19,8 @@ class EquilotlCli < Formula
   def install
     bin.install Dir["*"].first => "equilotl"
   end
+
+  def post_uninstall
+    rm_r("#{Dir.home}/Library/Application Support/Equicord")
+  end
 end
