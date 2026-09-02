@@ -5,8 +5,7 @@ cask "spotify@1.2.45.454" do
   sha256 arm:   "e4a8de4c3433e77cfb4d8262ebc11c3b922fa9e8c9a13ecc85c5795a97f54342",
          intel: "e68916d9d641442ea37c8c3ebffffd27c4c0ba3ac5aecd65409e0ed2f8bb7c8b"
 
-  url "https://loadspot.amd64fox1.workers.dev/download/spotify-autoupdate-#{version}-#{arch}.tbz",
-      verified: "loadspot.amd64fox1.workers.dev/"
+  url "https://loadspot.amd64fox1.workers.dev/download/spotify-autoupdate-#{version}-#{arch}.tbz"
   name "Spotify"
   desc "Music streaming service"
   homepage "https://www.spotify.com/"

@@ -2,8 +2,7 @@ cask "playcover-community@nightly" do
   version "1595"
   sha256 "78c03163871ca7fcaab9e5deeb3f2d848e5377ed0e599cc5c0f204dcdd232d5c"
 
-  url "https://nightly.link/PlayCover/PlayCover/workflows/2.nightly_release/develop/PlayCover_nightly_#{version}.dmg.zip",
-      verified: "nightly.link/PlayCover/PlayCover/workflows/2.nightly_release/"
+  url "https://nightly.link/PlayCover/PlayCover/workflows/2.nightly_release/develop/PlayCover_nightly_#{version}.dmg.zip"
   name "PlayCover"
   desc "Sideload iOS apps and games"
   homepage "https://github.com/PlayCover/PlayCover"

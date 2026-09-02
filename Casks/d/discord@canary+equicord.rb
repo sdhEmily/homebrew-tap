@@ -2,8 +2,7 @@ cask "discord@canary+equicord" do
   version "0.0.1299"
   sha256 "c544a911f0ee2fb12293acdda19dfff2cf800110704b6e076d90657f55d83b9a"
 
-  url "https://dl-canary.discordapp.net/apps/osx/#{version}/DiscordCanary.dmg",
-      verified: "dl-canary.discordapp.net/"
+  url "https://dl-canary.discordapp.net/apps/osx/#{version}/DiscordCanary.dmg"
   name "Discord Canary + Equicord"
   desc "Discord Canary with Equicord and OpenAsar preinstalled"
   homepage "https://canary.discord.com/"

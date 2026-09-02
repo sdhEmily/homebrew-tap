@@ -25,8 +25,7 @@ cask "discord+equicord" do
     end
   end
 
-  url "https://dl.discordapp.net/apps/osx/#{version}/Discord.dmg",
-      verified: "dl.discordapp.net/"
+  url "https://dl.discordapp.net/apps/osx/#{version}/Discord.dmg"
   name "Discord + Equicord"
   desc "Discord with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
