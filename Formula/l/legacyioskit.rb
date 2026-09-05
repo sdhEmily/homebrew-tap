@@ -38,6 +38,12 @@ class Legacyioskit < Formula
       exec ./restore.sh "$@"
     EOS
     (bin/"legacyioskit").chmod 0755
+
+    (bin/"legacyioskit-files").write <<~EOS
+      #!/bin/bash
+      open "#{libexec}"
+    EOS
+    (bin/"legacyioskit-files").chmod 0755
   end
 
   def post_install
