@@ -46,9 +46,9 @@ class Legacyioskit < Formula
     (bin/"legacyioskit-files").chmod 0755
   end
 
-  def post_install
-    Dir.chdir(libexec) do
-      system "git", "reset", "--hard"
-    end
+  post_install_steps do
+    run "/usr/bin/git",
+        args:  ["reset", "--hard"],
+        chdir: "{{libexec}}"
   end
 end

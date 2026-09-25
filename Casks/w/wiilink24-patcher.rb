@@ -15,7 +15,7 @@ cask "wiilink24-patcher" do
     strategy :github_latest
   end
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "WiiLinkPatcherGUI.app"
 end
