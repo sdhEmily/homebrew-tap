@@ -14,21 +14,42 @@ cask "spotify@1.2.45.454" do
     skip
   end
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "Spotify.app"
 
-  preflight do
-    app_dir = staged_path/"Spotify.app"
-    app_dir.mkpath
-    (staged_path/"Contents").rename(app_dir/"Contents")
+  preflight_steps do
+    mkdir_p "Spotify.app"
+    move "Contents", "Spotify.app/Contents"
   end
 
-  postflight do
-    ohai "Blocking Updates"
-    update_dir = "#{Dir.home}/Library/Application Support/Spotify/PersistentCache/Update"
-    system_command "/bin/mkdir", args: ["-p", update_dir]
-    system_command "/usr/bin/chflags", args: ["uchg", update_dir]
+  postflight_steps do
+    mkdir_p "/Users/{{user}}/Library/Application Support/Spotify"
+    mkdir_p "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache"
+    mkdir_p "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache/Update"
+
+    run "/usr/bin/chflags",
+        args:           [
+          "uchg",
+          "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache/Update",
+        ],
+        writable_paths: [
+          "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache",
+        ]
+  end
+
+  uninstall_preflight_steps do
+    if_path_exists "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache/Update" do
+      run "/usr/bin/chflags",
+          args:           [
+            "nouchg",
+            "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache/Update",
+          ],
+          writable_paths: [
+            "/Users/{{user}}/Library/Application Support/Spotify/PersistentCache",
+          ],
+          must_succeed:   false
+    end
   end
 
   uninstall launchctl: [
