@@ -2,13 +2,8 @@ class EquilotlCli < Formula
   desc "Cross platform CLI app for installing Equicord"
   homepage "https://github.com/Equicord/Equilotl"
 
-  if Hardware::CPU.arm?
-    url "https://github.com/Equicord/Equilotl/releases/download/v2.2.6/EquilotlCli-darwin-arm64"
-    sha256 "fdd56b173760b6b1e2b548c742cbd587d53c41b1bf39b7fa28e1c90fdcc448f3"
-  else
-    url "https://github.com/Equicord/Equilotl/releases/download/v2.2.6/EquilotlCli-darwin-x64"
-    sha256 "f1efaa5bc71e6e7a20d23ea1239df4769759820e7eedbd70ad91ead6f19c9c9b"
-  end
+  url "https://github.com/Equicord/Equilotl/releases/download/v2.3.0/EquilotlCli-universal"
+  sha256 "b64c28a15d3a4774b4bd68e7a4d0703aa92331ea678199dbef497f6916f90ad5"
 
   livecheck do
     url :stable
@@ -17,10 +12,5 @@ class EquilotlCli < Formula
 
   def install
     bin.install Dir["*"].first => "equilotl"
-  end
-
-  def post_uninstall
-    path = "#{Dir.home}/Library/Application Support/Equicord"
-    rm_r(path) if Dir.exist?(path)
   end
 end
