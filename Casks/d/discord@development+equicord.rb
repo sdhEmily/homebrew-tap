@@ -1,6 +1,6 @@
 cask "discord@development+equicord" do
-  version "1.0.1021"
-  sha256 "91b387c2e20013f3358f1cf192c94be6d9445f70cba36b82ab66a9cf2be7d718"
+  version "1.0.1023"
+  sha256 "5714dd576ba3dd82bef3d6bc81f174e6bcf244bd45670e3e4c8a7a3f60aa1d58"
 
   url "https://dl-development.discordapp.net/apps/osx/#{version}/DiscordDevelopment.dmg"
   name "Discord Development + Equicord"
