@@ -1,6 +1,6 @@
 cask "discord@ptb+equicord" do
-  version "0.0.259"
-  sha256 "8714eb15d67ec28070bafc18f9f97f00914273e161ac52c7519da7f770f6a58d"
+  version "0.0.262"
+  sha256 "3e97142385efd66a592472422fe9c5bcc857e3362bf127d1fb925a51e76f92b2"
 
   url "https://dl-ptb.discordapp.net/apps/osx/#{version}/DiscordPTB.dmg"
   name "Discord PTB + Equicord"
