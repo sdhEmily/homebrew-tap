@@ -8,8 +8,8 @@ cask "discord+equicord" do
     end
   end
   on_monterey :or_newer do
-    version "0.0.410"
-    sha256 "893ec758b3ae3fdc6f8c9bb197603d41042bff317aaa7d616f8ea64350d93b19"
+    version "0.0.413"
+    sha256 "4bd4cd81c78095f0bf866437b92c78c06ebf2671e8b2f97635fd5556efa6f25b"
 
     livecheck do
       url "https://discord.com/api/download/stable?platform=osx"
