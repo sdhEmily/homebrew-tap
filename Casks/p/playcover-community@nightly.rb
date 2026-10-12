@@ -1,6 +1,6 @@
 cask "playcover-community@nightly" do
-  version "1637"
-  sha256 "cebb20c655e3715c8950a755d5d5825383c555146ec8e7499580ef91a6723528"
+  version "1638"
+  sha256 "c05db81a6fc4aa0a5d467854bf08abb961e5f1961a514796fb9cab9273786d92"
 
   url "https://nightly.link/PlayCover/PlayCover/workflows/2.nightly_release/develop/PlayCover_nightly_#{version}.dmg.zip"
   name "PlayCover"
