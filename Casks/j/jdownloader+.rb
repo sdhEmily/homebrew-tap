@@ -178,6 +178,7 @@ cask "jdownloader+" do
     patches = {
         "cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json": {
             "lookandfeeltheme": "FLATLAF_DARK",
+            "packagesbackgroundhighlightenabled": False,
             "premiumalertetacolumnenabled": False,
             "premiumalerttaskcolumnenabled": False,
             "premiumalertspeedcolumnenabled": False,
@@ -198,7 +199,10 @@ cask "jdownloader+" do
         },
         "cfg/org.jdownloader.extensions.extraction.ExtractionExtension.json": {
             "deletearchivefilesafterextractionaction": "RECYCLE",
-        }
+        },
+        "cfg/org.jdownloader.settings.GeneralSettings.json": {
+            "cleanupafterdownloadaction": "CLEANUP_ONCE_AT_STARTUP",
+        },
     }
 
     for relative_path, values in patches.items():
