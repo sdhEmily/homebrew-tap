@@ -188,7 +188,6 @@ cask "jdownloader+" do
             "bannerenabled": False,
             "updateavailabledialogenabled": False,
             "clipboardskipconfirmdialogenabled": True,
-            "clipboardmonitored": False,
         },
         "cfg/org.jdownloader.gui.views.linkgrabber.addlinksdialog.LinkgrabberSettings.json": {
             "subfolderthreshold": 2,
