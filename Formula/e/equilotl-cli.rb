@@ -13,4 +13,8 @@ class EquilotlCli < Formula
   def install
     bin.install Dir["*"].first => "equilotl"
   end
+
+  test do
+    assert_predicate bin/"equilotl", :executable?
+  end
 end

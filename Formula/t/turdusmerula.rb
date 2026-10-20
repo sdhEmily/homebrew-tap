@@ -13,4 +13,9 @@ class Turdusmerula < Formula
   def install
     bin.install "bin/turdus_merula", "bin/turdusra1n"
   end
+
+  test do
+    assert_predicate bin/"turdus_merula", :executable?
+    assert_predicate bin/"turdusra1n", :executable?
+  end
 end

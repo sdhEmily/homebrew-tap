@@ -13,4 +13,8 @@ class WiimmsSzsTools < Formula
   def install
     bin.install Dir["bin/*"]
   end
+
+  test do
+    assert_predicate bin/"wszst", :executable?
+  end
 end

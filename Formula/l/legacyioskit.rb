@@ -51,4 +51,9 @@ class Legacyioskit < Formula
         args:  ["reset", "--hard"],
         chdir: "{{libexec}}"
   end
+
+  test do
+    assert_predicate bin/"legacyioskit", :executable?
+    assert_predicate bin/"legacyioskit-files", :executable?
+  end
 end
