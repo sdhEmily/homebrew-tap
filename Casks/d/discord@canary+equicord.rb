@@ -1,8 +1,8 @@
 cask "discord@canary+equicord" do
-  version "0.0.1427"
-  sha256 "1c8033ae06babedda6670bee7f947d378b9e2262a166d8025804150dd4ba24f9"
+  version "0.0.1488"
+  sha256 "6746e054b476c5ccff6af180f2ac9443ad51ec139cd7694cc5f0c43b7ed5af65"
 
-  url "https://dl-canary.discordapp.net/apps/osx/#{version}/DiscordCanary.dmg"
+  url "https://canary.dl2.discordapp.net/distro/app/canary/osx/universal/#{version}/DiscordCanary.dmg"
   name "Discord Canary + Equicord"
   desc "Discord Canary with Equicord and OpenAsar preinstalled"
   homepage "https://canary.discord.com/"
@@ -14,7 +14,7 @@ cask "discord@canary+equicord" do
 
   conflicts_with cask: "discord@canary"
   depends_on formula: "equilotl-cli"
-  depends_on macos: :monterey
+  depends_on macos: :ventura
 
   generated_script "install.sh", content: <<~SH
     #!/bin/sh
