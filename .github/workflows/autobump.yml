@@ -21,14 +21,14 @@ jobs:
       HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: Homebrew/actions/setup-homebrew@main
-        with:
-          core: true
-          cask: true
+        id: homebrew
 
       - name: Bump
         id: bump
         env:
           GH_TOKEN: ${{ github.token }}
+          TAP_PATH: ${{ steps.homebrew.outputs.repository-path }}
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
           set -euo pipefail
           FAILURES="$RUNNER_TEMP/autobump-failures.md"
@@ -61,8 +61,7 @@ jobs:
           }
           trap summarize EXIT
 
-          brew tap "$TAP"
-          cd "$(brew --repository "$TAP")"
+          cd "${TAP_PATH:?Homebrew setup did not provide a tap checkout}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main --quiet
@@ -88,6 +87,28 @@ jobs:
             return 1
           }
 
+          # Install shared livecheck dependencies before starting parallel Brew processes.
+          if [[ -n "$packages" ]]; then
+            brew install-bundler-gems --add-groups=livecheck
+          fi
+          results=$(mktemp -d "$RUNNER_TEMP/autobump-checks.XXXXXX")
+          count=0
+          batch_start=0
+          batch_size=3
+
+          collect_checks() {
+            local i
+            for (( i = batch_start; i < count; i++ )); do
+              printf 'Checking %s %s\n' "${types[i]}" "${names[i]}"
+              if ! wait "${pids[i]}"; then
+                printf -- "- \`%s\` (%s) — livecheck failed\n" "${names[i]}" "${types[i]}" >> "$FAILURES"
+                rm -f "$results/$i.version"
+              fi
+              cat "$results/$i.log"
+            done
+            batch_start=$count
+          }
+
           while IFS= read -r path; do
             [[ -n "$path" ]] || continue
             case "$path" in
@@ -96,12 +117,23 @@ jobs:
             esac
             name=${path##*/}
             name=${name%.rb}
-            echo "Checking $type $name"
-
-            if ! version=$(livecheck "$type" "$TAP/$name"); then
-              printf -- "- \`%s\` (%s) — livecheck failed\n" "$name" "$type" >> "$FAILURES"
-              continue
+            types[count]=$type
+            names[count]=$name
+            livecheck "$type" "$TAP/$name" > "$results/$count.version" 2> "$results/$count.log" &
+            pids[count]=$!
+            count=$((count + 1))
+            if (( count - batch_start == batch_size )); then
+              collect_checks
             fi
+          done <<<"$packages"
+          collect_checks
+
+          # Only version discovery is parallel. Bumps share a single Git checkout.
+          for (( i = 0; i < count; i++ )); do
+            [[ -f "$results/$i.version" ]] || continue
+            type=${types[i]}
+            name=${names[i]}
+            version=$(<"$results/$i.version")
             [[ -n "$version" ]] || continue
 
             echo "Bumping $type $name -> $version"
@@ -118,7 +150,7 @@ jobs:
               git reset --hard HEAD
               git clean -fd
             fi
-          done <<<"$packages"
+          done
 
           if (( updated > 0 )); then
             git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin HEAD:main
