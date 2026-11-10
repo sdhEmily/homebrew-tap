@@ -65,8 +65,8 @@ cask "discord@canary+equicord" do
     ],
   }
 
-  uninstall quit:   "com.hnc.DiscordCanary",
-            delete: "#{appdir}/Discord Canary.app"
+  uninstall launchctl: "com.discord.discord.ShipIt",
+            quit:      "com.hnc.DiscordCanary"
 
   zap trash: [
     "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discordcanary.sfl*",

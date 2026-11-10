@@ -65,9 +65,6 @@ cask "discord@development+equicord" do
     ],
   }
 
-  uninstall quit:   "com.hnc.DiscordDevelopment",
-            delete: "#{appdir}/Discord Development.app"
-
   zap trash: [
     "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discorddevelopment.sfl*",
     "~/Library/Application Support/discorddevelopment",

@@ -19,14 +19,14 @@ cask "discord+equicord" do
     end
   end
 
-  url "https://dl.discordapp.net/apps/osx/#{version}/Discord.dmg"
+  
   name "Discord + Equicord"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   conflicts_with cask: "discord"
   depends_on formula: "equilotl-cli"
-  depends_on :macos
+  depends_on macos: :ventura
 
   generated_script "install.sh", content: <<~SH
     #!/bin/sh
@@ -82,8 +82,7 @@ cask "discord+equicord" do
               "com.hnc.Discord",
               "com.hnc.Discord.helper.Plugin",
               "com.hnc.Discord.helper.Renderer",
-            ],
-            delete:    "#{appdir}/Discord.app"
+            ]
 
   zap trash: [
     "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discord.sfl*",
@@ -94,6 +93,7 @@ cask "discord+equicord" do
     "~/Library/Cookies/com.hnc.Discord.binarycookies",
     "~/Library/HTTPStorages/com.hnc.Discord",
     "~/Library/HTTPStorages/com.hnc.Discord.binarycookies",
+    "~/Library/Preferences/ByHost/com.discord.discord.ShipIt.*.plist",
     "~/Library/Preferences/com.hnc.Discord.helper.plist",
     "~/Library/Preferences/com.hnc.Discord.plist",
     "~/Library/Saved Application State/com.hnc.Discord.savedState",
