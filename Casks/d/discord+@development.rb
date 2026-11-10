@@ -1,45 +1,32 @@
 cask "discord+@development" do
-  version "1.0.1035"
-  sha256 "eb4f71554c2c12c3ab72b4b80e4e5f3c3a5bddb88e3f35b6e90487cf08022ecc"
+  version "1.0.1027"
+  sha256 "24acb3c20c947dbb9a73bd29007919d1d05ab5586ccedc8873f3afa283646061"
 
-  url "https://development.dl2.discordapp.net/distro/app/development/osx/universal/#{version}/DiscordDevelopment.dmg"
+  url "https://development.dl2.discordapp.net/apps/osx/#{version}/DiscordDevelopment.zip"
   name "Discord+ Development"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   livecheck do
-    url "https://discord.com/api/download/development?platform=osx"
-    strategy :header_match
+    url "https://discord.com/api/updates/development?platform=osx"
+    strategy :json do |json|
+      json["name"]
+    end
   end
 
   conflicts_with cask: "discord@development"
   depends_on formula: "equilotl-cli"
   depends_on macos: :ventura
 
-  generated_script "install.sh", content: <<~SH
+  app "Discord Development.app"
+  generated_script "patch.sh", content: <<~SH
     #!/bin/sh
     set -e
 
-    source_app="$1"
-    target_app="$2"
-    equilotl="$3"
+    discord="$1"
+    equilotl="$2"
 
-    /bin/rm -rf "$target_app"
-    /usr/bin/ditto "$source_app" "$target_app"
-
-    printf '==> Circumventing Quarantine\\n'
-    /usr/bin/xattr -dr com.apple.quarantine "$target_app"
-
-    /usr/bin/open -gj -a "$target_app"
-    /usr/bin/osascript -e 'quit app "Discord Development"'
-
-    printf '==> Installing OpenAsar\\n'
-    "$equilotl" -install-openasar -location "$target_app"
-
-    printf '==> Installing Equicord\\n'
-    "$equilotl" -install -location "$target_app"
-
-    printf '==> Disabling Discord updater\\n'
+    printf 'Disabling Host Updates\\n'
     /usr/bin/python3 -c '
     import json, os
     path = os.path.expanduser("~/Library/Application Support/discorddevelopment/settings.json")
@@ -55,12 +42,22 @@ cask "discord+@development" do
     with open(path, "w") as f:
         json.dump(settings, f, indent=2)
     '
+
+    printf 'Circumventing Quarantine\\n'
+    /usr/bin/xattr -dr com.apple.quarantine "$discord"
+    /usr/bin/open -gj -a "$discord"
+    /usr/bin/osascript -e 'quit app "Discord Development"'
+
+    printf 'Installing OpenAsar\\n'
+    "$equilotl" -install-openasar -location "$discord"
+
+    printf 'Installing Equicord\\n'
+    "$equilotl" -install -location "$discord"
   SH
   installer script: {
-    executable: "install.sh",
+    executable: "patch.sh",
     args:       [
       "#{staged_path}/Discord Development.app",
-      "#{appdir}/Discord Development.app",
       (formula_opt_bin("equilotl-cli")/"equilotl").to_s,
     ],
   }

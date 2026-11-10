@@ -1,45 +1,32 @@
 cask "discord+@canary" do
-  version "0.0.1539"
-  sha256 "b96360b3dea90a0f5b9febaf257839daf1da1d72b77fbbfb267d4092c534a9c7"
+  version "0.0.1428"
+  sha256 "c6a38799e3d6ddd0f6dd8ffbc7e592f3ffc8d3ee0f1e0668131a9b328d0ce8fc"
 
-  url "https://canary.dl2.discordapp.net/distro/app/canary/osx/universal/#{version}/DiscordCanary.dmg"
+  url "https://canary.dl2.discordapp.net/apps/osx/#{version}/DiscordCanary.zip"
   name "Discord+ Canary"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://canary.discord.com/"
 
   livecheck do
-    url "https://discord.com/api/download/canary?platform=osx"
-    strategy :header_match
+    url "https://discord.com/api/updates/canary?platform=osx"
+    strategy :json do |json|
+      json["name"]
+    end
   end
 
   conflicts_with cask: "discord@canary"
   depends_on formula: "equilotl-cli"
   depends_on macos: :ventura
 
-  generated_script "install.sh", content: <<~SH
+  app "Discord Canary.app"
+  generated_script "patch.sh", content: <<~SH
     #!/bin/sh
     set -e
 
-    source_app="$1"
-    target_app="$2"
-    equilotl="$3"
+    discord="$1"
+    equilotl="$2"
 
-    /bin/rm -rf "$target_app"
-    /usr/bin/ditto "$source_app" "$target_app"
-
-    printf '==> Circumventing Quarantine\\n'
-    /usr/bin/xattr -dr com.apple.quarantine "$target_app"
-
-    /usr/bin/open -gj -a "$target_app"
-    /usr/bin/osascript -e 'quit app "Discord Canary"'
-
-    printf '==> Installing OpenAsar\\n'
-    "$equilotl" -install-openasar -location "$target_app"
-
-    printf '==> Installing Equicord\\n'
-    "$equilotl" -install -location "$target_app"
-
-    printf '==> Disabling Discord updater\\n'
+    printf 'Disabling Host Updates\\n'
     /usr/bin/python3 -c '
     import json, os
     path = os.path.expanduser("~/Library/Application Support/discordcanary/settings.json")
@@ -55,12 +42,22 @@ cask "discord+@canary" do
     with open(path, "w") as f:
         json.dump(settings, f, indent=2)
     '
+
+    printf 'Circumventing Quarantine\\n'
+    /usr/bin/xattr -dr com.apple.quarantine "$discord"
+    /usr/bin/open -gj -a "$discord"
+    /usr/bin/osascript -e 'quit app "Discord Canary"'
+
+    printf 'Installing OpenAsar\\n'
+    "$equilotl" -install-openasar -location "$discord"
+
+    printf 'Installing Equicord\\n'
+    "$equilotl" -install -location "$discord"
   SH
   installer script: {
-    executable: "install.sh",
+    executable: "patch.sh",
     args:       [
       "#{staged_path}/Discord Canary.app",
-      "#{appdir}/Discord Canary.app",
       (formula_opt_bin("equilotl-cli")/"equilotl").to_s,
     ],
   }
