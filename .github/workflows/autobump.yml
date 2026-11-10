@@ -5,8 +5,13 @@ on:
   schedule:
     - cron: "23 */3 * * *"
 
+concurrency:
+  group: tap-autobump
+  cancel-in-progress: false
+
 permissions:
   contents: write
+  issues: write
 
 jobs:
   bump:
@@ -21,57 +26,136 @@ jobs:
           cask: true
 
       - name: Bump
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          brew tap "$TAP"
+          FAILURES="$RUNNER_TEMP/autobump-failures.md"
+          : > "$FAILURES"
+          updated=0
 
-          run_livecheck() {
-            local result
-            for i in 1 2 3; do
-              result=$(brew livecheck "$@" 2>/dev/null) && { echo "$result"; return; }
-              echo "Livecheck attempt $i failed, retrying in 15s..." >&2
-              sleep 15
-            done
-            echo "[]"
+          # Keep upstream output from being interpreted as workflow commands.
+          log_token=$(uuidgen)
+          printf '::stop-commands::%s\n' "$log_token"
+
+          summarize() {
+            local status=$?
+            printf '::%s::\n' "$log_token"
+            {
+              echo '## Homebrew tap autobump'
+              echo
+              echo "- Bump commits prepared: $updated"
+              echo "- Package failures: $(awk 'END { print NR }' "$FAILURES")"
+              if [[ -s "$FAILURES" ]]; then
+                echo
+                cat "$FAILURES"
+                echo
+                echo 'See the **Bump** step logs for Homebrew diagnostics.'
+              fi
+              if (( status != 0 )); then
+                echo
+                echo 'The run stopped on a workflow error. Check the logs for the failing command and push status.'
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
           }
+          trap summarize EXIT
 
-          CASKS=$(run_livecheck --tap "$TAP" --cask --newer-only --json \
-            | jq -r '.[] | "\(.cask) \(.version.latest)"')
-          FORMULAE=$(run_livecheck --tap "$TAP" --newer-only --json \
-            | jq -r '.[] | select(.formula!=null) | "\(.formula) \(.version.latest)"')
-
-          if [[ -z "${CASKS}${FORMULAE}" ]]; then
-            echo "Nothing to bump."
-            exit 0
-          fi
-
-          REPO_PATH="$(brew --repository "$TAP")"
-          cd "$REPO_PATH"
-
+          brew tap "$TAP"
+          cd "$(brew --repository "$TAP")"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin \
-            "https://x-access-token:${HOMEBREW_GITHUB_API_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin main --quiet
+          git checkout -B main FETCH_HEAD
 
-          bump() {
-            local type="$1" name="$2" version="$3"
-            echo "Bumping $type $name -> $version"
-            brew "bump-${type}-pr" --write-only --no-browse --version="$version" "$TAP/$name" || return
-            if ! git diff --quiet; then
-              git add -A
-              git commit -m "$name $version"
-            fi
+          # List files without loading their Ruby definitions. A broken definition
+          # can abort a tap-wide livecheck before it checks any other packages.
+          packages=$(git ls-files -- 'Casks/*.rb' 'Formula/*.rb')
+
+          livecheck() {
+            local type="$1" package="$2" result attempt
+            for attempt in 1 2 3; do
+              if result=$(brew livecheck "--$type" --newer-only --json "$package") &&
+                 jq -e 'type == "array" and all(.[]; .status != "error")' <<<"$result" >/dev/null; then
+                jq -r '.[] | select(.version.outdated == true) | .version.latest' <<<"$result"
+                return
+              fi
+              printf 'Livecheck attempt %s failed for %s.\n%s\n' "$attempt" "$package" "$result" >&2
+              if (( attempt < 3 )); then
+                sleep 15
+              fi
+            done
+            return 1
           }
 
-          while read -r name ver; do
-            [[ -n "$name" ]] && bump cask "$name" "$ver"
-          done <<<"$CASKS"
+          while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            case "$path" in
+              Casks/*) type=cask ;;
+              Formula/*) type=formula ;;
+            esac
+            name=${path##*/}
+            name=${name%.rb}
+            echo "Checking $type $name"
 
-          while read -r name ver; do
-            [[ -n "$name" ]] && bump formula "$name" "$ver"
-          done <<<"$FORMULAE"
+            if ! version=$(livecheck "$type" "$TAP/$name"); then
+              printf -- "- \`%s\` (%s) — livecheck failed\n" "$name" "$type" >> "$FAILURES"
+              continue
+            fi
+            [[ -n "$version" ]] || continue
 
-          git fetch origin main --quiet
-          if ! git diff --quiet origin/main..HEAD; then
-            git push origin HEAD:main
+            echo "Bumping $type $name -> $version"
+            if brew "bump-${type}-pr" --write-only --no-browse --version="$version" "$TAP/$name"; then
+              git add -A
+              if ! git diff --cached --quiet; then
+                git commit -m "$name $version"
+                updated=$((updated + 1))
+              fi
+            else
+              printf -- "- \`%s\` (%s) — bump failed\n" "$name" "$type" >> "$FAILURES"
+              # This is the runner's disposable tap checkout. Discard partial edits
+              # so the next successful bump cannot commit the failed package.
+              git reset --hard HEAD
+              git clean -fd
+            fi
+          done <<<"$packages"
+
+          if (( updated > 0 )); then
+            git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin HEAD:main
+          fi
+
+      - name: Track package failures
+        if: ${{ !cancelled() && steps.bump.outcome != 'skipped' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP_OUTCOME: ${{ steps.bump.outcome }}
+        run: |
+          set -euo pipefail
+          FAILURES="$RUNNER_TEMP/autobump-failures.md"
+          [[ -f "$FAILURES" ]] || exit 0
+
+          title="Homebrew autobump package failures"
+          repo_api="repos/$GITHUB_REPOSITORY"
+          issue=$(gh api --paginate "$repo_api/issues?state=open&per_page=100" |
+            jq -sc --arg title "$title" '[.[][] | select(
+              .title == $title and .user.login == "github-actions[bot]" and .pull_request == null
+            )] | first // empty')
+
+          if [[ -s "$FAILURES" ]]; then
+            body=$(printf 'Packages skipped by autobump\n\n%s\n\nSee the [workflow runs](%s/%s/actions/workflows/autobump.yml) for diagnostics.\n' \
+              "$(cat "$FAILURES")" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY")
+            if [[ -z "$issue" ]]; then
+              url=$(gh api "$repo_api/issues" -f title="$title" -f body="$body" \
+                -f "assignees[]=$GITHUB_REPOSITORY_OWNER" --jq .html_url)
+            else
+              number=$(jq -r '.number' <<<"$issue")
+              url=$(jq -r '.html_url' <<<"$issue")
+              if [[ "$(jq -r '.body' <<<"$issue")" != "$body" ]]; then
+                gh api "$repo_api/issues/$number" --method PATCH -f body="$body" >/dev/null
+              fi
+            fi
+            printf '\n[Autobump tracking issue](%s)\n' "$url" >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$BUMP_OUTCOME" == success && -n "$issue" ]]; then
+            number=$(jq -r '.number' <<<"$issue")
+            gh api "$repo_api/issues/$number" --method PATCH -f state=closed -f state_reason=completed >/dev/null
           fi
