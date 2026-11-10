@@ -4,7 +4,7 @@ cask "discord@development+equicord" do
 
   url "https://development.dl2.discordapp.net/distro/app/development/osx/universal/#{version}/DiscordDevelopment.dmg"
   name "Discord Development + Equicord"
-  desc "Discord Development with Equicord and OpenAsar preinstalled"
+  desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   livecheck do

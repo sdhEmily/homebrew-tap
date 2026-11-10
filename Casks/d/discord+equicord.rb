@@ -1,4 +1,4 @@
-cask "discord" do
+cask "discord+equicord" do
   on_big_sur :or_older do
     version "0.0.402"
     sha256 "568293a1f65fab2244b5acdac282b88b6f00efd87defd76cc77185d1b9caba64"
@@ -21,7 +21,7 @@ cask "discord" do
 
   url "https://dl.discordapp.net/apps/osx/#{version}/Discord.dmg"
   name "Discord + Equicord"
-  desc "Discord with Equicord and OpenAsar preinstalled"
+  desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   conflicts_with cask: "discord"

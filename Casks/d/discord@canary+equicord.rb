@@ -4,7 +4,7 @@ cask "discord@canary+equicord" do
 
   url "https://canary.dl2.discordapp.net/distro/app/canary/osx/universal/#{version}/DiscordCanary.dmg"
   name "Discord Canary + Equicord"
-  desc "Discord Canary with Equicord and OpenAsar preinstalled"
+  desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://canary.discord.com/"
 
   livecheck do

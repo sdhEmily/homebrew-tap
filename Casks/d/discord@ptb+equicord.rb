@@ -1,10 +1,10 @@
-cask "discord@ptb" do
+cask "discord@ptb+equicord" do
   version "0.0.269"
   sha256 "55e066c3e64f684b351558281165e3b803c5ad4d1f16e56217746185c92b4e6c"
 
   url "https://dl-ptb.discordapp.net/apps/osx/#{version}/DiscordPTB.dmg"
   name "Discord PTB + Equicord"
-  desc "Discord PTB with Equicord and OpenAsar preinstalled"
+  desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   livecheck do
