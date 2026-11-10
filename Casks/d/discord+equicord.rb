@@ -1,31 +1,18 @@
 cask "discord+equicord" do
-  on_big_sur :or_older do
-    version "0.0.402"
-    sha256 "568293a1f65fab2244b5acdac282b88b6f00efd87defd76cc77185d1b9caba64"
+  version "0.0.422"
+  sha256 "6fedd6856cbc48656704dfc718d52114e12ffae9ae904d429ae6e1ded2081fa2"
 
-    url "https://dl.discordapp.net/apps/osx/0.0.402/Discord.dmg"
-
-    livecheck do
-      skip "Legacy version"
-    end
-  end
-  on_monterey :or_newer do
-    version "0.0.422"
-    sha256 "6fedd6856cbc48656704dfc718d52114e12ffae9ae904d429ae6e1ded2081fa2"
-
-    url "https://stable.dl2.discordapp.net/distro/app/stable/osx/universal/#{version}/Discord.dmg"
-
-    livecheck do
-      url "https://updates.discord.com/distributions/app/manifests/latest?channel=stable&platform=osx&arch=x64"
-      strategy :json do |json|
-        json.dig("full", "host_version")&.join(".")
-      end
-    end
-  end
-
+  url "https://stable.dl2.discordapp.net/distro/app/stable/osx/universal/#{version}/Discord.dmg"
   name "Discord + Equicord"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
+
+  livecheck do
+    url "https://updates.discord.com/distributions/app/manifests/latest?channel=stable&platform=osx&arch=x64"
+    strategy :json do |json|
+      json.dig("full", "host_version")&.join(".")
+    end
+  end
 
   conflicts_with cask: "discord"
   depends_on formula: "equilotl-cli"
