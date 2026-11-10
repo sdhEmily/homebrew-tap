@@ -1,14 +1,14 @@
-cask "discord+equicord" do
-  version "0.0.422"
-  sha256 "6fedd6856cbc48656704dfc718d52114e12ffae9ae904d429ae6e1ded2081fa2"
+cask "discord+" do
+  version "0.0.421"
+  sha256 "85ac799972df5cc34978359ba720fb61024bd727b64db6c22bd705a1c555015d"
 
   url "https://stable.dl2.discordapp.net/distro/app/stable/osx/universal/#{version}/Discord.dmg"
-  name "Discord + Equicord"
+  name "Discord+"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
 
   livecheck do
-    url "https://updates.discord.com/distributions/app/manifests/latest?channel=stable&platform=osx&arch=x64"
+    url "https://updates.discord.com/distributions/app/manifests/latest?install_id=12345678-1234-4234-8234-123456789abc&channel=stable&platform=osx&arch=x64"
     strategy :json do |json|
       json.dig("full", "host_version")&.join(".")
     end
@@ -22,26 +22,10 @@ cask "discord+equicord" do
     #!/bin/sh
     set -e
 
-    source_app="$1"
-    target_app="$2"
-    equilotl="$3"
+    discord="$1"
+    equilotl="$2"
 
-    /bin/rm -rf "$target_app"
-    /usr/bin/ditto "$source_app" "$target_app"
-
-    printf '==> Circumventing Quarantine\\n'
-    /usr/bin/xattr -dr com.apple.quarantine "$target_app"
-
-    /usr/bin/open -gj -a "$target_app"
-    /usr/bin/osascript -e 'quit app "Discord"'
-
-    printf '==> Installing OpenAsar\\n'
-    "$equilotl" -install-openasar -location "$target_app"
-
-    printf '==> Installing Equicord\\n'
-    "$equilotl" -install -location "$target_app"
-
-    printf '==> Disabling Discord updater\\n'
+    printf 'Disabling Host Updates\\n'
     /usr/bin/python3 -c '
     import json, os
     path = os.path.expanduser("~/Library/Application Support/discord/settings.json")
@@ -57,15 +41,27 @@ cask "discord+equicord" do
     with open(path, "w") as f:
         json.dump(settings, f, indent=2)
     '
+
+    printf 'Circumventing Quarantine\\n'
+    /usr/bin/xattr -dr com.apple.quarantine "$discord"
+    /usr/bin/open -gj -a "$discord"
+    /usr/bin/osascript -e 'quit app "Discord"'
+
+    #printf 'Installing OpenAsar\\n'
+    #"$equilotl" -install-openasar -location "$discord"
+
+    printf 'Installing Equicord\\n'
+    "$equilotl" -install -location "$discord"
   SH
   installer script: {
     executable: "install.sh",
     args:       [
       "#{staged_path}/Discord.app",
-      "#{appdir}/Discord.app",
       (formula_opt_bin("equilotl-cli")/"equilotl").to_s,
     ],
   }
+
+  app "Discord.app"
 
   uninstall launchctl: "com.discord.discord.ShipIt",
             quit:      [

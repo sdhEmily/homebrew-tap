@@ -1,18 +1,18 @@
-cask "discord@canary+equicord" do
-  version "0.0.1539"
-  sha256 "b96360b3dea90a0f5b9febaf257839daf1da1d72b77fbbfb267d4092c534a9c7"
+cask "discord+@ptb" do
+  version "0.0.270"
+  sha256 "22f5328172b4ac5f171eda523f990c4de31c12aedf2ca3929fb7f2c2d13a0ba3"
 
-  url "https://canary.dl2.discordapp.net/distro/app/canary/osx/universal/#{version}/DiscordCanary.dmg"
-  name "Discord Canary + Equicord"
+  url "https://ptb.dl2.discordapp.net/distro/app/ptb/osx/universal/#{version}/DiscordPTB.dmg"
+  name "Discord+ PTB"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
-  homepage "https://canary.discord.com/"
+  homepage "https://discord.com/"
 
   livecheck do
-    url "https://discord.com/api/download/canary?platform=osx"
+    url "https://discord.com/api/download/ptb?platform=osx"
     strategy :header_match
   end
 
-  conflicts_with cask: "discord@canary"
+  conflicts_with cask: "discord@ptb"
   depends_on formula: "equilotl-cli"
   depends_on macos: :ventura
 
@@ -31,7 +31,7 @@ cask "discord@canary+equicord" do
     /usr/bin/xattr -dr com.apple.quarantine "$target_app"
 
     /usr/bin/open -gj -a "$target_app"
-    /usr/bin/osascript -e 'quit app "Discord Canary"'
+    /usr/bin/osascript -e 'quit app "Discord PTB"'
 
     printf '==> Installing OpenAsar\\n'
     "$equilotl" -install-openasar -location "$target_app"
@@ -42,7 +42,7 @@ cask "discord@canary+equicord" do
     printf '==> Disabling Discord updater\\n'
     /usr/bin/python3 -c '
     import json, os
-    path = os.path.expanduser("~/Library/Application Support/discordcanary/settings.json")
+    path = os.path.expanduser("~/Library/Application Support/discordptb/settings.json")
     if os.path.exists(path):
         with open(path) as f:
             settings = json.load(f)
@@ -59,23 +59,18 @@ cask "discord@canary+equicord" do
   installer script: {
     executable: "install.sh",
     args:       [
-      "#{staged_path}/Discord Canary.app",
-      "#{appdir}/Discord Canary.app",
+      "#{staged_path}/Discord PTB.app",
+      "#{appdir}/Discord PTB.app",
       (formula_opt_bin("equilotl-cli")/"equilotl").to_s,
     ],
   }
 
-  uninstall launchctl: "com.discord.discord.ShipIt",
-            quit:      "com.hnc.DiscordCanary"
-
   zap trash: [
-    "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discordcanary.sfl*",
-    "~/Library/Application Support/discordcanary",
-    "~/Library/Caches/com.hnc.DiscordCanary",
-    "~/Library/Caches/com.hnc.DiscordCanary.ShipIt",
-    "~/Library/Cookies/com.hnc.DiscordCanary.binarycookies",
-    "~/Library/Preferences/com.hnc.DiscordCanary.helper.plist",
-    "~/Library/Preferences/com.hnc.DiscordCanary.plist",
-    "~/Library/Saved Application State/com.hnc.DiscordCanary.savedState",
+    "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discordptb.sfl*",
+    "~/Library/Application Support/com.hnc.DiscordPTB.ShipIt",
+    "~/Library/Application Support/discordptb",
+    "~/Library/Caches/com.hnc.DiscordPTB",
+    "~/Library/Preferences/com.hnc.DiscordPTB.plist",
+    "~/Library/Saved Application State/com.hnc.DiscordPTB.savedState",
   ]
 end
