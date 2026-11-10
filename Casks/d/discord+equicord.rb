@@ -19,7 +19,6 @@ cask "discord+equicord" do
     end
   end
 
-  
   name "Discord + Equicord"
   desc "Voice and text chat software with Equicord and OpenAsar preinstalled"
   homepage "https://discord.com/"
