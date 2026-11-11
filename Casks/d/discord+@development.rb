@@ -62,6 +62,9 @@ cask "discord+@development" do
     ],
   }
 
+  uninstall launchctl: "com.discord.discord.ShipIt",
+            quit:      "com.hnc.DiscordDevelopment"
+
   zap trash: [
     "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discorddevelopment.sfl*",
     "~/Library/Application Support/discorddevelopment",

@@ -62,6 +62,9 @@ cask "discord+@ptb" do
     ],
   }
 
+  uninstall launchctl: "com.discord.discord.ShipIt",
+            quit:      "com.hnc.DiscordPTB"
+
   zap trash: [
     "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.hnc.discordptb.sfl*",
     "~/Library/Application Support/com.hnc.DiscordPTB.ShipIt",
