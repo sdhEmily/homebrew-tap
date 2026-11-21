@@ -1,6 +1,6 @@
 cask "palera1n@beta" do
-  version "3.0.0-beta.3"
-  sha256 "cc8e23f8ea7bc3940787e7c89b99a436ef480697531534cdb2ec55761f3ccc54"
+  version "3.0.0-beta.4"
+  sha256 "f61de50eea582c2647c55602c70251e8b20b867436a1a299a53a946f52bda296"
 
   url "https://github.com/palera1n/palera1n/releases/download/v#{version}/palera1n-macos-universal.dmg"
   name "palera1n"
