@@ -1,8 +1,11 @@
 cask "equilotl" do
-  version "2.3.1"
-  sha256 "569c259db152df8edb7533a16641b146bf8d82615bba4924e24734fffe811733"
+  arch arm: "arm64", intel: "x64"
 
-  url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl.dmg"
+  version "2.3.2"
+  sha256 arm:   "2997000f8ddea3d2f1b37759b2f725c50a14580b7ee4357f307f82088c9e9e01",
+         intel: "3872982be8406cd594aca8162f8e1033794506d6f42dc3bb4b80d8648ff6de6e"
+
+  url "https://github.com/Equicord/Equilotl/releases/download/v#{version}/Equilotl-#{arch}.dmg"
   name "Equilotl"
   desc "Cross platform GUI app for installing Equicord"
   homepage "https://github.com/Equicord/Equilotl"
